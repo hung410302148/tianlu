@@ -10,34 +10,21 @@
 <script src="https://unpkg.com/mqtt@5.3.4/dist/mqtt.min.js"></script>
 <style>
   :root{
-    --bg:#12141d;
-    --panel:#1c2030;
-    --panel-2:#232841;
-    --line:#343a54;
-    --gold:#e8a33d;
-    --gold-deep:#b5741a;
-    --text:#f1ede0;
-    --text-dim:#9a9a8f;
-    --ok:#7fbe8c;
-    --bad:#d9695a;
-    --radius:16px;
+    --bg:#12141d; --panel:#1c2030; --panel-2:#232841; --line:#343a54;
+    --gold:#e8a33d; --gold-deep:#b5741a; --text:#f1ede0; --text-dim:#9a9a8f;
+    --ok:#7fbe8c; --bad:#d9695a; --flame:#e08a6a; --radius:16px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     background:radial-gradient(ellipse at top, #1a1e2c 0%, #101219 70%);
-    color:var(--text);
-    font-family:'Noto Sans TC', sans-serif;
-    min-height:100vh;
+    color:var(--text); font-family:'Noto Sans TC', sans-serif; min-height:100vh;
     padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
-    display:flex;
-    justify-content:center;
+    display:flex; justify-content:center; transition:background .6s ease;
   }
   #app{ width:100%; max-width:720px; }
   h1,h2,h3{ font-family:'Noto Serif TC', serif; font-weight:700; margin:0 0 6px; letter-spacing:.02em; }
-  h1{font-size:28px;}
-  h2{font-size:20px;color:var(--gold);}
-  h3{font-size:16px;color:var(--text);}
+  h1{font-size:28px;} h2{font-size:20px;color:var(--gold);} h3{font-size:16px;color:var(--text);}
   p{line-height:1.7;color:var(--text-dim);margin:0 0 16px;}
   .eyebrow{ font-size:12px; letter-spacing:.15em; color:var(--gold-deep); text-transform:uppercase; margin-bottom:8px; font-weight:500; }
   .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:24px; margin-bottom:16px; }
@@ -52,11 +39,11 @@
   .btn.secondary{ background:transparent; border:1px solid var(--line); color:var(--text); }
   .btn.big{ padding:28px 20px; font-size:20px; box-shadow:0 0 0 4px rgba(232,163,61,0.15); }
   .btn:disabled{opacity:.4;cursor:not-allowed;}
-  input[type=text], select{
+  input[type=text]{
     width:100%; padding:14px 16px; font-size:16px; background:var(--panel-2);
     border:1px solid var(--line); border-radius:10px; color:var(--text); margin-bottom:12px; font-family:inherit;
   }
-  input:focus-visible, select:focus-visible{outline:2px solid var(--gold);}
+  input:focus-visible{outline:2px solid var(--gold);}
   .role-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
   .role-card{ border:1px solid var(--line); border-radius:12px; padding:12px; cursor:pointer; background:var(--panel-2); text-align:left; }
   .role-card.sel{ border-color:var(--gold); background:rgba(232,163,61,0.12); }
@@ -66,7 +53,6 @@
   .player-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); font-size:14px; }
   .player-row:last-child{border-bottom:none;}
   .tag{ font-size:11px; padding:3px 8px; border-radius:6px; background:var(--panel-2); color:var(--text-dim); }
-  .tag.ready{background:rgba(127,190,140,0.18);color:var(--ok);}
   .center{text-align:center;}
   .muted{color:var(--text-dim);font-size:13px;}
   .err{color:var(--bad);font-size:13px;margin:-6px 0 12px;}
@@ -79,15 +65,21 @@
   .relay-chip{ flex:0 0 auto; padding:10px 14px; border-radius:10px; background:var(--panel-2); border:1px solid var(--line); font-size:13px; white-space:nowrap; transition:all .3s ease; }
   .relay-chip.holder{ border-color:var(--gold); background:rgba(232,163,61,0.15); box-shadow:0 0 16px rgba(232,163,61,0.35); }
   .relay-chip.done{color:var(--ok);border-color:var(--ok);}
+  .relay-chip.chip-flame{border-color:#5a3420;background:rgba(224,138,106,0.08);}
+  .relay-chip.chip-flame.holder{border-color:var(--flame);background:rgba(224,138,106,0.18);box-shadow:0 0 16px rgba(224,138,106,0.4);}
+  .relay-chip.chip-flame.done{color:var(--flame);border-color:var(--flame);}
   .timer{ font-family:'Noto Serif TC', serif; font-size:15px; color:var(--text-dim); text-align:center; margin-bottom:8px; }
   .pulse{animation:pulse 1.6s ease-in-out infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+  @keyframes beat{0%,100%{transform:scale(1);}50%{transform:scale(1.35);}}
+  .beat-pulse{width:36px;height:36px;border-radius:50%;background:var(--gold);margin:14px auto;animation:beat .8s ease-in-out infinite;}
   @media (prefers-reduced-motion: reduce){ *{animation:none !important;transition:none !important;} }
   .blessing-row{padding:12px 0;border-bottom:1px solid var(--line);}
   .blessing-row:last-child{border-bottom:none;}
   .blessing-role{font-weight:700;color:var(--gold);font-size:14px;}
   .blessing-text{font-size:14px;color:var(--text-dim);margin-top:2px;}
-  .faith-total{ font-family:'Noto Serif TC', serif; font-size:40px; color:var(--gold); text-align:center; margin:8px 0 4px; }
+  .meter-track{height:14px;border-radius:7px;background:var(--panel-2);overflow:hidden;margin-bottom:16px;}
+  .meter-fill{height:100%;background:linear-gradient(90deg,#e8a33d,#6ea8dd,#7fbe8c);transition:width .5s ease;}
   #qrcode-wrap{background:#fff;padding:14px;border-radius:14px;display:inline-block;margin:4px 0 12px;}
 </style>
 </head>
@@ -96,11 +88,11 @@
 
 <script>
 /* ---------- MQTT 主題規劃 ----------
-tianlu/{code}/game     retain  host 發布：{phase, exploreEndsAt, convergence, resultAt}
-tianlu/{code}/players  retain  host 發布：[{id,name,roleId,faith,ready,joinedAt}]
+tianlu/{code}/game     retain  host 發布：{phase, relay|choir, ...}
+tianlu/{code}/players  retain  host 發布：[{id,name,roleId,joinedAt}]
 tianlu/{code}/join     一次性  玩家發布加入請求，只有 host 訂閱處理
-tianlu/{code}/explore  一次性  玩家發布探索進度，只有 host 訂閱處理
-tianlu/{code}/relay    一次性  玩家發布「傳光」動作，只有 host 訂閱處理
+tianlu/{code}/relay    一次性  玩家發布「傳光/傳火」動作，只有 host 訂閱處理
+tianlu/{code}/music    一次性  玩家發布打擊動作，只有 host 訂閱處理
 ------------------------------------ */
 
 const ROLES = [
@@ -112,16 +104,7 @@ const ROLES = [
   {id:'athlete',   name:'運動員 / 教練',  gift:'忍耐與剛強',   blessing:'感謝你撐過了最難走的那一段路。'}
 ];
 const ROLE_MAP = Object.fromEntries(ROLES.map(r=>[r.id,r]));
-
-const EXPLORE_PROMPTS = {
-  engineer:  ['你注意到地圖上有一道被忽略的接縫。','你測量了岔路的坡度，選了比較穩的那條。','你在石堆裡找到一塊還撐得住的踏腳石。'],
-  counselor: ['你聽見遠處有人的腳步聲變慢了。','你留意到同伴的呼吸有點急。','你輕聲說了一句「還好嗎？我在。」'],
-  pm:        ['你確認了一下隊伍現在的位置跟狀態。','你喊了一聲，把大家重新集合起來。','你把接下來的順序在心裡排了一遍。'],
-  designer:  ['你注意到光落下來的角度特別美。','你在石壁上看見一個很舊的符號。','你想像了一下終點大概長什麼樣子。'],
-  teacher:   ['你想起一句很久以前聽過的話。','你把剛剛想通的道理默默記下來。','你決定等一下要說給大家聽。'],
-  athlete:   ['你深吸一口氣，把腳步站穩。','你先跨過一塊會晃的石頭，替大家探路。','你回頭伸手，扶了後面的人一把。']
-};
-const DEFAULT_PROMPTS = ['你在路上安靜地走了一段。','你想起了為什麼要走這趟路。','你抬頭，看見前方的光。'];
+const TRACK_INFO = { rhythm:{name:'節奏',color:'#e8a33d'}, melody:{name:'旋律',color:'#6ea8dd'}, harmony:{name:'和聲',color:'#7fbe8c'} };
 
 // ---------- 全域狀態 ----------
 let role = null;          // 'host' | 'player'
@@ -131,26 +114,27 @@ let playerName = '';
 let playerRoleId = null;
 let joinError = '';
 let hostSetupCode = '';
-let exploreStep = 0;
-let exploreDone = false;
 let relayJustSent = false;
+let lastMusicTap = 0;
 
 let latestPlayers = [];
 let latestGame = {phase:'LOBBY'};
+let lastSeenPhase = null;
+let lastSeenRelayStatus = null;
+let lastSeenChoirStatus = null;
 
 // ---------- MQTT 連線 ----------
 const BROKER_URLS = ['wss://broker.hivemq.com:8884/mqtt','wss://broker.emqx.io:8084/mqtt'];
 let brokerAttempt = 0;
 let mqttClient = null;
-let connStatus = 'connecting'; // connecting | connected | failed
+let connStatus = 'connecting';
 let connErr = '';
 let receivedSnapshot = false;
 
 function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
 function randCode(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let s='';
-  for(let i=0;i<4;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  let s=''; for(let i=0;i<4;i++) s+=chars[Math.floor(Math.random()*chars.length)];
   return s;
 }
 function mmss(ms){
@@ -159,40 +143,37 @@ function mmss(ms){
   return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
 }
 function topics(code){
-  const base = 'tianlu/'+code;
-  return { game: base+'/game', players: base+'/players', join: base+'/join', explore: base+'/explore', relay: base+'/relay' };
+  const base='tianlu/'+code;
+  return { game: base+'/game', players: base+'/players', join: base+'/join', relay: base+'/relay', music: base+'/music' };
 }
 function publish(topic, obj, retain){
   if(!mqttClient || connStatus!=='connected') return;
   mqttClient.publish(topic, JSON.stringify(obj), {retain: !!retain, qos:1});
 }
 function subscribeAsHost(code){
-  const t = topics(code);
-  mqttClient.subscribe([t.join, t.explore, t.relay, t.game, t.players], {qos:1});
+  const t=topics(code);
+  mqttClient.subscribe([t.join, t.relay, t.music, t.game, t.players], {qos:1});
 }
 function subscribeAsPlayer(code){
-  const t = topics(code);
+  const t=topics(code);
   mqttClient.subscribe([t.game, t.players], {qos:1});
 }
 
 function connectMqtt(){
-  connStatus = 'connecting';
-  render();
-  let settled = false;
+  connStatus='connecting'; render();
+  let settled=false;
   const url = BROKER_URLS[brokerAttempt % BROKER_URLS.length];
-  try{
-    mqttClient = mqtt.connect(url, {clientId:'tianlu_'+uid(), reconnectPeriod:4000, connectTimeout:8000});
-  }catch(e){ connErr=String(e && e.message||e); tryNextBroker(); return; }
+  try{ mqttClient = mqtt.connect(url, {clientId:'tianlu_'+uid(), reconnectPeriod:4000, connectTimeout:8000}); }
+  catch(e){ connErr=String(e && e.message||e); tryNextBroker(); return; }
   const giveUp = setTimeout(()=>{ if(!settled) tryNextBroker(); }, 8000);
   mqttClient.on('connect', ()=>{
-    settled = true; clearTimeout(giveUp);
-    connStatus = 'connected';
+    settled=true; clearTimeout(giveUp); connStatus='connected';
     if(roomCode && role==='host') subscribeAsHost(roomCode);
     else if(roomCode && role==='player') subscribeAsPlayer(roomCode);
     render();
   });
   mqttClient.on('error', (e)=>{
-    connErr = String(e && e.message||e);
+    connErr=String(e && e.message||e);
     if(!settled){ settled=true; clearTimeout(giveUp); tryNextBroker(); }
   });
   mqttClient.on('message', onMqttMessage);
@@ -203,6 +184,7 @@ function tryNextBroker(){
   try{ mqttClient && mqttClient.end(true); }catch(e){}
   connectMqtt();
 }
+
 function onMqttMessage(topic, payload){
   let msg;
   try{ msg = JSON.parse(payload.toString()); }catch(e){ return; }
@@ -211,56 +193,136 @@ function onMqttMessage(topic, payload){
   if(role!=='host') return;
   if(topic.endsWith('/join')){
     if(!latestPlayers.find(p=>p.id===msg.id)){
-      latestPlayers = latestPlayers.concat([{id:msg.id, name:msg.name, roleId:msg.roleId, faith:0, ready:false, joinedAt:msg.joinedAt||Date.now()}]);
+      latestPlayers = latestPlayers.concat([{id:msg.id, name:msg.name, roleId:msg.roleId, joinedAt:msg.joinedAt||Date.now()}]);
       publish(topics(roomCode).players, latestPlayers, true);
       render();
     }
     return;
   }
-  if(topic.endsWith('/explore')){
-    latestPlayers = latestPlayers.map(p=> p.id===msg.id ? {...p, faith:(p.faith||0)+(msg.faithDelta||0), ready: p.ready||!!msg.ready} : p);
-    publish(topics(roomCode).players, latestPlayers, true);
-    render();
+  if(topic.endsWith('/relay')){
+    const c = latestGame.relay;
+    if(c && c.status==='active' && c.order[c.currentIndex]===msg.id){ handleRelayAdvance(); }
     return;
   }
-  if(topic.endsWith('/relay')){
-    const c = latestGame.convergence;
-    if(c && c.status==='active' && c.order[c.currentIndex]===msg.id){
-      const nextIndex = c.currentIndex+1;
-      let newGame;
-      if(nextIndex>=c.order.length){ newGame = {phase:'RESULT', resultAt:Date.now()}; }
-      else{ newGame = {...latestGame, convergence:{...c, currentIndex:nextIndex, holderSince:Date.now()}}; }
+  if(topic.endsWith('/music')){
+    const c = latestGame.choir;
+    if(c && c.status==='active'){
+      const per = 100/(Math.max(latestPlayers.length,1)*6);
+      const newRes = Math.min(100, c.resonance+per);
+      const status = newRes>=100 ? 'success' : 'active';
+      const newGame = {...latestGame, choir:{...c, resonance:newRes, status}};
       latestGame = newGame;
       publish(topics(roomCode).game, newGame, true);
       render();
+      if(status==='success'){ setTimeout(()=>finishToResult(), 2400); }
     }
     return;
   }
 }
 
-// ---------- 定時器：倒數畫面刷新 + host 端的時限判定 ----------
+// ---------- 關卡狀態機（只有 host 呼叫） ----------
+function relayOrderFor(phase, players){
+  if(phase==='VALLEY'){
+    const rank = p => p.roleId==='counselor' ? 0 : (p.roleId==='athlete' ? 1 : 2);
+    return players.slice().sort((a,b)=>rank(a)-rank(b)).map(p=>p.id);
+  }
+  return players.map(p=>p.id);
+}
+function startRelayLevel(phase, order, budgetMs){
+  const now=Date.now();
+  const newGame = { phase, relay:{ order, currentIndex:0, holderSince:now, endsAt:now+budgetMs, status:'active' } };
+  latestGame = newGame;
+  publish(topics(roomCode).game, newGame, true);
+  render();
+}
+function startChoirLevel(){
+  const tracks=['rhythm','melody','harmony'];
+  const trackOf={};
+  latestPlayers.forEach((p,i)=>{ trackOf[p.id]=tracks[i%3]; });
+  const newGame = { phase:'CHOIR', choir:{ endsAt:Date.now()+180000, resonance:0, trackOf, status:'active' } };
+  latestGame = newGame;
+  publish(topics(roomCode).game, newGame, true);
+  render();
+}
+function finishToResult(){
+  const newGame = {phase:'RESULT', resultAt:Date.now()};
+  latestGame = newGame;
+  publish(topics(roomCode).game, newGame, true);
+  render();
+}
+function handleRelaySuccessTransition(fromPhase){
+  if(fromPhase==='GATE'){ startRelayLevel('VALLEY', relayOrderFor('VALLEY', latestPlayers), 240000); }
+  else if(fromPhase==='VALLEY'){ startChoirLevel(); }
+}
+function handleRelayAdvance(){
+  const phase = latestGame.phase;
+  const c = latestGame.relay;
+  const nextIndex = c.currentIndex+1;
+  if(nextIndex >= c.order.length){
+    const doneGame = {...latestGame, relay:{...c, currentIndex:nextIndex, status:'success'}};
+    latestGame = doneGame;
+    publish(topics(roomCode).game, doneGame, true);
+    render();
+    setTimeout(()=>handleRelaySuccessTransition(phase), 2400);
+  } else {
+    const newGame = {...latestGame, relay:{...c, currentIndex:nextIndex, holderSince:Date.now()}};
+    latestGame = newGame;
+    publish(topics(roomCode).game, newGame, true);
+    render();
+  }
+}
+function hostRetryRelay(){
+  const c = latestGame.relay;
+  const newGame = {...latestGame, relay:{...c, currentIndex:0, holderSince:Date.now(), endsAt:Date.now()+180000, status:'active'}};
+  latestGame = newGame;
+  publish(topics(roomCode).game, newGame, true);
+  render();
+}
+function hostForceComplete(){
+  const phase = latestGame.phase;
+  if(phase==='GATE' || phase==='VALLEY'){
+    const c = latestGame.relay;
+    const doneGame = {...latestGame, relay:{...c, currentIndex:c.order.length, status:'success'}};
+    latestGame = doneGame;
+    publish(topics(roomCode).game, doneGame, true);
+    render();
+    setTimeout(()=>handleRelaySuccessTransition(phase), 1200);
+  } else if(phase==='CHOIR'){
+    const c = latestGame.choir;
+    const doneGame = {...latestGame, choir:{...c, resonance:100, status:'success'}};
+    latestGame = doneGame;
+    publish(topics(roomCode).game, doneGame, true);
+    render();
+    setTimeout(()=>finishToResult(), 1200);
+  }
+}
+function hostStartGame(){ startRelayLevel('GATE', relayOrderFor('GATE', latestPlayers), 240000); }
+function hostPlayAgain(){
+  const newGame = {phase:'LOBBY'};
+  latestGame = newGame;
+  publish(topics(roomCode).game, newGame, true);
+  render();
+}
+
+// ---------- 定時器 ----------
 function startTicker(){
   setInterval(()=>{
     if(role==='host' && latestGame){
-      const now = Date.now();
-      if(latestGame.phase==='EXPLORE'){
-        const allReady = latestPlayers.length>0 && latestPlayers.every(p=>p.ready);
-        if(now>=latestGame.exploreEndsAt || allReady){
-          const order = latestPlayers.map(p=>p.id);
-          const newGame = {phase:'CONVERGENCE', convergence:{order, currentIndex:0, holderSince:now, endsAt:now+90000, status:'active'}};
-          latestGame = newGame;
-          publish(topics(roomCode).game, newGame, true);
-        }
-      } else if(latestGame.phase==='CONVERGENCE'){
-        const c = latestGame.convergence;
-        if(c.status==='active' && now>=c.endsAt){
-          const newGame = {...latestGame, convergence:{...c, status:'fail'}};
-          latestGame = newGame;
-          publish(topics(roomCode).game, newGame, true);
-        }
+      const now=Date.now();
+      const phase=latestGame.phase;
+      if((phase==='GATE'||phase==='VALLEY') && latestGame.relay && latestGame.relay.status==='active' && now>=latestGame.relay.endsAt){
+        const c=latestGame.relay;
+        const failGame={...latestGame, relay:{...c, status:'fail'}};
+        latestGame=failGame;
+        publish(topics(roomCode).game, failGame, true);
+      } else if(phase==='CHOIR' && latestGame.choir && latestGame.choir.status==='active' && now>=latestGame.choir.endsAt){
+        finishToResult();
       }
     }
-    render();
+    const phase = latestGame && latestGame.phase;
+    const hostTicking = role==='host' && (phase==='GATE'||phase==='VALLEY'||phase==='CHOIR');
+    const playerTicking = role==='player' && playerId!==null && (phase==='GATE'||phase==='VALLEY'||phase==='CHOIR');
+    if(hostTicking || playerTicking) render();
   }, 1000);
 }
 
@@ -277,7 +339,6 @@ function createRoom(){
   }
   render();
 }
-
 function joinRoom(){
   joinError='';
   if(connStatus!=='connected'){ joinError='尚未連上即時同步伺服器，請稍等幾秒再試一次'; render(); return; }
@@ -287,82 +348,151 @@ function joinRoom(){
   roomCode = roomCode.toUpperCase();
   playerId = uid();
   role='player';
-  receivedSnapshot = false;
+  receivedSnapshot=false;
   subscribeAsPlayer(roomCode);
-  const t = topics(roomCode);
+  const t=topics(roomCode);
   publish(t.join, {id:playerId, name:playerName.trim(), roleId:playerRoleId, joinedAt:Date.now()}, false);
-  latestPlayers = latestPlayers.concat([{id:playerId, name:playerName.trim(), roleId:playerRoleId, faith:0, ready:false, joinedAt:Date.now()}]);
+  latestPlayers = latestPlayers.concat([{id:playerId, name:playerName.trim(), roleId:playerRoleId, joinedAt:Date.now()}]);
   setTimeout(()=>{
     if(!receivedSnapshot){ joinError='還沒收到大螢幕的回應，請確認房號正確、且大螢幕已經建立房間'; render(); }
   }, 6000);
   render();
 }
-
-function hostStartGame(){
-  const newGame = {phase:'EXPLORE', exploreEndsAt: Date.now()+180000};
-  latestGame = newGame;
-  publish(topics(roomCode).game, newGame, true);
-  render();
-}
-function hostForceAdvance(){
-  const order = latestPlayers.map(p=>p.id);
-  const newGame = { phase:'CONVERGENCE', convergence:{ order, currentIndex:0, holderSince:Date.now(), endsAt:Date.now()+90000, status:'active' } };
-  latestGame = newGame;
-  publish(topics(roomCode).game, newGame, true);
-  render();
-}
-function hostRetryConvergence(){
-  const c = latestGame.convergence;
-  const newGame = {...latestGame, convergence:{...c, currentIndex:0, holderSince:Date.now(), endsAt:Date.now()+90000, status:'active'}};
-  latestGame = newGame;
-  publish(topics(roomCode).game, newGame, true);
-  render();
-}
-function hostPlayAgain(){
-  latestPlayers = latestPlayers.map(p=>({...p, faith:0, ready:false}));
-  const newGame = {phase:'LOBBY'};
-  latestGame = newGame;
-  publish(topics(roomCode).players, latestPlayers, true);
-  publish(topics(roomCode).game, newGame, true);
-  render();
-}
-function playerTapExplore(){
-  const prompts = EXPLORE_PROMPTS[playerRoleId] || DEFAULT_PROMPTS;
-  exploreStep++;
-  const done = exploreStep >= prompts.length;
-  if(done) exploreDone = true;
-  publish(topics(roomCode).explore, {id:playerId, faithDelta:10, ready:done}, false);
-  render();
-}
 function playerPassLight(){
-  relayJustSent = true;
+  relayJustSent=true;
   publish(topics(roomCode).relay, {id:playerId, ts:Date.now()}, false);
   render();
   setTimeout(()=>{ relayJustSent=false; render(); }, 1200);
 }
-function buildJoinUrl(){
-  return location.origin + location.pathname + '?room=' + roomCode;
+function playerTapMusic(){
+  const now=Date.now();
+  if(now-lastMusicTap<320) return;
+  lastMusicTap=now;
+  publish(topics(roomCode).music, {id:playerId, ts:now}, false);
+  playTick();
+  render();
+}
+function buildJoinUrl(){ return location.origin + location.pathname + '?room=' + roomCode; }
+
+// ---------- 感官回饋（每台裝置各自偵測狀態變化，各自觸發） ----------
+let audioCtx=null;
+function ensureAudio(){
+  if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; } }
+  if(audioCtx && audioCtx.state==='suspended'){ audioCtx.resume(); }
+}
+function vibrate(pattern){ try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){} }
+function playChime(){
+  ensureAudio(); if(!audioCtx) return;
+  const now=audioCtx.currentTime;
+  [523.25,659.25,783.99,1046.5].forEach((freq,i)=>{
+    const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+    osc.type='sine'; osc.frequency.value=freq;
+    gain.gain.setValueAtTime(0, now+i*0.12);
+    gain.gain.linearRampToValueAtTime(0.18, now+i*0.12+0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now+i*0.12+0.5);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now+i*0.12); osc.stop(now+i*0.12+0.55);
+  });
+}
+function playDoorThud(){
+  ensureAudio(); if(!audioCtx) return;
+  const now=audioCtx.currentTime;
+  const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+  osc.type='sine';
+  osc.frequency.setValueAtTime(80, now);
+  osc.frequency.exponentialRampToValueAtTime(38, now+0.4);
+  gain.gain.setValueAtTime(0.5, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now+0.6);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(now); osc.stop(now+0.65);
+}
+function playTick(){
+  ensureAudio(); if(!audioCtx) return;
+  const now=audioCtx.currentTime;
+  const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+  osc.type='triangle'; osc.frequency.value=440;
+  gain.gain.setValueAtTime(0.15, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now+0.12);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(now); osc.stop(now+0.15);
+}
+let windNodes=null;
+function startWind(){
+  ensureAudio(); if(!audioCtx || windNodes) return;
+  const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+  const lfo=audioCtx.createOscillator(), lfoGain=audioCtx.createGain();
+  osc.type='sawtooth'; osc.frequency.value=55; gain.gain.value=0.05;
+  lfo.frequency.value=0.15; lfoGain.gain.value=0.03;
+  lfo.connect(lfoGain); lfoGain.connect(gain.gain);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(); lfo.start();
+  windNodes={osc,gain,lfo,lfoGain};
+}
+function stopWind(){
+  if(!windNodes) return;
+  try{
+    const now=audioCtx.currentTime;
+    windNodes.gain.gain.exponentialRampToValueAtTime(0.0001, now+0.8);
+    windNodes.osc.stop(now+0.9); windNodes.lfo.stop(now+0.9);
+  }catch(e){}
+  windNodes=null;
+}
+function onPhaseEnter(phase){
+  if(phase==='VALLEY'){ vibrate([300,150,300,150,300]); startWind(); }
+  else{ stopWind(); }
+}
+function watchStateChanges(){
+  const phase = latestGame && latestGame.phase;
+  if(phase !== lastSeenPhase){
+    onPhaseEnter(phase);
+    lastSeenPhase = phase;
+    lastSeenRelayStatus = null;
+    lastSeenChoirStatus = null;
+  }
+  if((phase==='GATE'||phase==='VALLEY') && latestGame.relay){
+    const st = latestGame.relay.status;
+    if(st !== lastSeenRelayStatus){
+      if(st==='success'){ playChime(); if(phase==='GATE') playDoorThud(); vibrate(phase==='VALLEY'?[80,40,80,40,80,40,300]:[120,60,120]); }
+      if(st==='fail'){ vibrate([220]); }
+      lastSeenRelayStatus = st;
+    }
+  }
+  if(phase==='CHOIR' && latestGame.choir){
+    const st = latestGame.choir.status;
+    if(st !== lastSeenChoirStatus){
+      if(st==='success'){ playChime(); vibrate([100,50,100,50,100,50,300]); }
+      lastSeenChoirStatus = st;
+    }
+  }
 }
 
 // ---------- 畫面渲染 ----------
 function renderBanner(){
-  if(connStatus==='connecting'){
-    return '<div class="card" style="border-color:var(--gold-deep)"><p class="muted" style="margin:0">連線到即時同步伺服器中…</p></div>';
-  }
+  if(connStatus==='connecting'){ return '<div class="card" style="border-color:var(--gold-deep)"><p class="muted" style="margin:0">連線到即時同步伺服器中…</p></div>'; }
   if(connStatus==='failed'){
     return `<div class="card" style="border-color:var(--bad)">
       <h3 style="color:var(--bad)">連不上即時同步伺服器</h3>
-      <p style="margin:0">已經試過備援伺服器還是失敗，可能是這個網路擋掉了 WebSocket（常見於部分公共 Wi-Fi），換個網路或熱點試試。</p>
+      <p style="margin:0">已經試過備援伺服器還是失敗，可能是這個網路擋掉了 WebSocket，換個網路或熱點試試。</p>
       <button class="btn secondary" data-act="retryConn">重新嘗試連線</button>
     </div>`;
   }
   return '';
 }
-
 function render(){
+  watchStateChanges();
   const app = document.getElementById('app');
+  const active = document.activeElement;
+  let focusInfo = null;
+  if(active && app && app.contains(active) && (active.tagName==='INPUT' || active.tagName==='TEXTAREA')){
+    focusInfo = {id:active.id, selStart:active.selectionStart, selEnd:active.selectionEnd};
+  }
+  document.body.style.background = (latestGame && latestGame.phase==='VALLEY') ? '#000' : '';
   app.innerHTML = renderBanner() + view();
   bindEvents();
+  if(focusInfo && focusInfo.id){
+    const el = document.getElementById(focusInfo.id);
+    if(el){ el.focus(); try{ el.setSelectionRange(focusInfo.selStart, focusInfo.selEnd); }catch(e){} }
+  }
   const qrEl = document.getElementById('qrcode-wrap');
   if(qrEl && roomCode){
     qrEl.innerHTML='';
@@ -375,15 +505,17 @@ function view(){
   if(!role) return viewSelect();
   if(role==='host'){
     if(!latestGame || latestGame.phase==='LOBBY') return viewHostLobby();
-    if(latestGame.phase==='EXPLORE') return viewHostExplore();
-    if(latestGame.phase==='CONVERGENCE') return viewHostConvergence();
+    if(latestGame.phase==='GATE') return viewHostGate();
+    if(latestGame.phase==='VALLEY') return viewHostValley();
+    if(latestGame.phase==='CHOIR') return viewHostChoir();
     if(latestGame.phase==='RESULT') return viewResult(true);
   }
   if(role==='player'){
     if(playerId===null) return viewPlayerJoinForm();
     if(!latestGame || latestGame.phase==='LOBBY') return viewPlayerLobby();
-    if(latestGame.phase==='EXPLORE') return viewPlayerExplore();
-    if(latestGame.phase==='CONVERGENCE') return viewPlayerConvergence();
+    if(latestGame.phase==='GATE') return viewPlayerGate();
+    if(latestGame.phase==='VALLEY') return viewPlayerValley();
+    if(latestGame.phase==='CHOIR') return viewPlayerChoir();
     if(latestGame.phase==='RESULT') return viewResult(false);
   }
   return '';
@@ -408,17 +540,17 @@ function viewHostLobby(){
   const players = latestPlayers;
   return `
   <div class="center" style="padding:10px 0">
-    <div class="eyebrow">房號 · 請大家看這裡</div>
+    <div class="eyebrow">房號 · 荒謬城集合</div>
     <div class="code-display">${roomCode}</div>
     <div id="qrcode-wrap"></div>
-    <p class="muted">掃這個 QR code，或打開同一個網址選「我是玩家」，輸入房號 ${roomCode} 加入。</p>
+    <p class="muted">掃這個 QR code 加入。</p>
   </div>
   <div class="card">
     <h3>已加入（${players.length}）</h3>
     ${players.length===0 ? '<p class="muted">還沒有人加入……</p>' :
       players.map(p=>`<div class="player-row"><span>${escapeHtml(p.name)}</span><span class="tag">${ROLE_MAP[p.roleId]?ROLE_MAP[p.roleId].name:''}</span></div>`).join('')}
   </div>
-  <button class="btn" data-act="hostStart" ${players.length<1?'disabled':''}>開始遊戲</button>
+  <button class="btn" data-act="hostStart" ${players.length<1?'disabled':''}>開始遊戲，出發前往窄門</button>
   <p class="muted center" style="margin-top:8px">建議 2～4 人一起玩，體驗會比較完整。</p>
   `;
 }
@@ -426,8 +558,7 @@ function viewHostLobby(){
 function viewPlayerJoinForm(){
   const roleGrid = ROLES.map(r=>`
     <div class="role-card ${playerRoleId===r.id?'sel':''}" data-act="pickRole" data-role="${r.id}">
-      <span class="rn">${r.name}</span>
-      <span class="rg">${r.gift}</span>
+      <span class="rn">${r.name}</span><span class="rg">${r.gift}</span>
     </div>`).join('');
   return `
   <div style="padding:16px 0 4px">
@@ -449,11 +580,16 @@ function viewPlayerJoinForm(){
 
 function viewPlayerLobby(){
   const players = latestPlayers;
+  const myRole = ROLE_MAP[playerRoleId];
   return `
-  <div class="center" style="padding:30px 0">
-    <div class="eyebrow">已加入</div>
+  <div class="center" style="padding:24px 0 10px">
+    <div class="eyebrow">荒謬城 · 集合中</div>
     <h1>等主持人開始……</h1>
-    <p>你是「${ROLE_MAP[playerRoleId]?ROLE_MAP[playerRoleId].name:''}」</p>
+  </div>
+  <div class="card center">
+    <div class="eyebrow">你的職業</div>
+    <h2 style="margin-bottom:4px">${myRole?myRole.name:''}</h2>
+    <p style="margin-bottom:0">屬靈恩賜：${myRole?myRole.gift:''}</p>
   </div>
   <div class="card">
     <h3>目前隊伍（${players.length}）</h3>
@@ -462,141 +598,169 @@ function viewPlayerLobby(){
   `;
 }
 
-function viewHostExplore(){
-  const players = latestPlayers;
-  const remain = latestGame.exploreEndsAt - Date.now();
-  const readyCount = players.filter(p=>p.ready).length;
-  return `
-  <div class="center" style="padding:10px 0">
-    <div class="eyebrow">第一階段 · 個人探索</div>
-    <h1>大家正走在各自的路上</h1>
-    <div class="timer">剩餘時間 ${mmss(remain)}</div>
-  </div>
-  <div class="card">
-    <h3>探索進度（${readyCount} / ${players.length} 完成）</h3>
-    ${players.map(p=>`
-      <div class="player-row">
-        <span>${escapeHtml(p.name)} · ${ROLE_MAP[p.roleId]?ROLE_MAP[p.roleId].name:''}</span>
-        <span class="tag ${p.ready?'ready':''}">${p.ready?'完成':'探索中'}</span>
-      </div>`).join('')}
-  </div>
-  <button class="btn secondary" data-act="hostForceAdvance">大家都好了，直接進下一關</button>
-  `;
-}
-
-function viewPlayerExplore(){
-  const prompts = EXPLORE_PROMPTS[playerRoleId] || DEFAULT_PROMPTS;
-  if(exploreDone){
-    return `
-    <div class="center" style="padding:40px 0">
-      <div class="eyebrow">探索完成</div>
-      <h1>你已經走過這一段</h1>
-      <p>等其他人走完，或等主持人開始下一關。</p>
-    </div>`;
-  }
-  const text = prompts[Math.min(exploreStep, prompts.length-1)];
-  return `
-  <div style="padding:20px 0 8px">
-    <div class="eyebrow">你的路 · ${ROLE_MAP[playerRoleId]?ROLE_MAP[playerRoleId].name:''}</div>
-  </div>
-  <div class="card center">
-    <p style="font-size:16px;color:var(--text)">${text}</p>
-    <button class="btn big" data-act="tapExplore">繼續往前走</button>
-  </div>
-  <p class="muted center">${exploreStep+1} / ${prompts.length}</p>
-  `;
-}
-
-function viewHostConvergence(){
-  const c = latestGame.convergence;
-  const players = latestPlayers;
+function relayChips(c, players, extraClass){
   const nameOf = id => (players.find(p=>p.id===id)||{}).name || '?';
+  const cls = extraClass ? ' '+extraClass : '';
+  return c.order.map((id,i)=>`
+    <div class="relay-chip${cls} ${i===c.currentIndex && c.status==='active' ? 'holder pulse':''} ${i<c.currentIndex?'done':''}">
+      ${i+1}. ${escapeHtml(nameOf(id))}
+    </div>`).join('');
+}
+
+function viewHostGate(){
+  const c = latestGame.relay; const players = latestPlayers;
   const remain = c.endsAt - Date.now();
-  const failed = c.status==='fail';
+  const failed = c.status==='fail', success = c.status==='success';
+  const engineer = players.find(p=>p.roleId==='engineer');
+  const pm = players.find(p=>p.roleId==='pm');
   return `
   <div class="center" style="padding:6px 0">
-    <div class="eyebrow">窄門與同心合意</div>
+    <div class="eyebrow">第一關 · 窄門</div>
     <h1>把光傳遍全隊，才能推開這道門</h1>
-    ${failed? '<div class="timer" style="color:var(--bad)">時間到，還沒傳完一圈</div>' : `<div class="timer">剩餘時間 ${mmss(remain)}</div>`}
+    ${engineer?`<p class="muted">${escapeHtml(engineer.name)}（工程師）收到了門框結構圖：把手機在桌上拼成一個方陣。</p>`:''}
+    ${pm?`<p class="muted">${escapeHtml(pm.name)}（PM）準備發起「同心合意」的連線。</p>`:''}
+    ${success? '<div class="timer" style="color:var(--ok)">窄門已開！</div>' :
+      failed ? '<div class="timer" style="color:var(--bad)">時間到，還沒傳完一圈</div>' :
+      `<div class="timer">剩餘時間 ${mmss(remain)}</div>`}
   </div>
-  <div class="gate-wrap">
-    <div class="gate-panel l"></div>
-    <div class="gate-panel r"></div>
-  </div>
+  <div class="gate-wrap ${success?'open':''}"><div class="gate-panel l"></div><div class="gate-panel r"></div></div>
   <div class="card">
-    <div class="relay-track">
-      ${c.order.map((id,i)=>`
-        <div class="relay-chip ${i===c.currentIndex && !failed?'holder pulse':''} ${i<c.currentIndex?'done':''}">
-          ${i+1}. ${escapeHtml(nameOf(id))}
-        </div>`).join('')}
-    </div>
+    <div class="relay-track">${relayChips(c, players)}</div>
     <p class="muted center">現場大聲喊出下一棒是誰，逼大家真的開口溝通。</p>
   </div>
-  ${failed ? `<button class="btn" data-act="hostRetry">重新挑戰這一關</button>` : ''}
+  ${failed ? `<button class="btn" data-act="hostRetryRelay">重新挑戰這一關</button>` : ''}
+  ${!success && !failed ? `<button class="btn secondary" data-act="hostForceComplete">直接過關（demo 用）</button>` : ''}
   `;
 }
-
-function viewPlayerConvergence(){
-  const c = latestGame.convergence;
+function viewPlayerGate(){
+  const c = latestGame.relay;
+  const failed = c.status==='fail', success = c.status==='success';
+  if(success) return `<div class="center" style="padding:50px 0"><div class="eyebrow">窄門已開</div><h1>穿過去吧</h1></div>`;
+  if(failed) return `<div class="center" style="padding:40px 0"><div class="eyebrow">挑戰失敗</div><h1>光沒有傳完一圈</h1><p>看大螢幕，主持人重新挑戰後再繼續。</p></div>`;
   const holderId = c.order[c.currentIndex];
-  const isHolder = holderId === playerId;
+  const isHolder = holderId===playerId;
   const myPos = c.order.indexOf(playerId);
   const remain = c.endsAt - Date.now();
-  const failed = c.status==='fail';
-
-  if(failed){
-    return `
-    <div class="center" style="padding:40px 0">
-      <div class="eyebrow">挑戰失敗</div>
-      <h1>光沒有傳完一圈</h1>
-      <p>看大螢幕，主持人按下重新挑戰後再繼續。</p>
-    </div>`;
-  }
   if(isHolder){
     return `
-    <div style="padding:16px 0 6px">
-      <div class="eyebrow">你手上有光</div>
-      <div class="timer">剩餘時間 ${mmss(remain)}</div>
-    </div>
+    <div style="padding:16px 0 6px"><div class="eyebrow">你手上有光</div><div class="timer">剩餘時間 ${mmss(remain)}</div></div>
     <div class="card center">
       <p style="color:var(--text)">大聲喊出下一位的名字，再把光傳給他。</p>
       <button class="btn big" data-act="passLight" ${relayJustSent?'disabled':''}>${relayJustSent?'已傳出！':'傳出真理之光'}</button>
-    </div>
-    `;
+    </div>`;
   }
   const ahead = myPos - c.currentIndex;
   return `
   <div class="center" style="padding:40px 0">
-    <div class="eyebrow">等待接光</div>
-    <h1>你是第 ${myPos+1} 棒</h1>
+    <div class="eyebrow">等待接光</div><h1>你是第 ${myPos+1} 棒</h1>
     <p class="pulse">前面還有 ${Math.max(ahead,0)} 人，注意聽誰喊你的名字。</p>
     <div class="timer">剩餘時間 ${mmss(remain)}</div>
+  </div>`;
+}
+
+function viewHostValley(){
+  const c = latestGame.relay; const players = latestPlayers;
+  const remain = c.endsAt - Date.now();
+  const failed = c.status==='fail', success = c.status==='success';
+  const counselor = players.find(p=>p.roleId==='counselor');
+  return `
+  <div class="center" style="padding:6px 0">
+    <div class="eyebrow" style="color:var(--flame)">第二關 · 死陰幽谷</div>
+    <h1>把火苗接力傳下去</h1>
+    ${counselor?`<p class="muted">只有${escapeHtml(counselor.name)}（心理師）手上還亮著一團燭光……</p>`:''}
+    ${success? '<div class="timer" style="color:var(--ok)">黑暗被撕裂了！</div>' :
+      failed ? '<div class="timer" style="color:var(--bad)">火苗熄滅，時間到了</div>' :
+      `<div class="timer">剩餘時間 ${mmss(remain)}</div>`}
   </div>
+  <div class="card" style="background:#05060a;border-color:#3a2418">
+    <div class="relay-track">${relayChips(c, players, 'chip-flame')}</div>
+    <p class="muted center">把手機湊近下一位，喊出他的名字，再按下傳火。</p>
+  </div>
+  ${failed ? `<button class="btn" data-act="hostRetryRelay">重新點燃</button>` : ''}
+  ${!success && !failed ? `<button class="btn secondary" data-act="hostForceComplete">直接過關（demo 用）</button>` : ''}
+  `;
+}
+function viewPlayerValley(){
+  const c = latestGame.relay;
+  const failed = c.status==='fail', success = c.status==='success';
+  if(success) return `<div class="center" style="padding:50px 0"><div class="eyebrow" style="color:var(--flame)">黑暗已過</div><h1>光又回來了</h1></div>`;
+  if(failed) return `<div class="center" style="padding:40px 0"><div class="eyebrow">火苗熄滅</div><h1>再試一次</h1><p>看大螢幕，等主持人重新點燃。</p></div>`;
+  const holderId = c.order[c.currentIndex];
+  const isHolder = holderId===playerId;
+  const myPos = c.order.indexOf(playerId);
+  const remain = c.endsAt - Date.now();
+  if(isHolder){
+    return `
+    <div style="padding:16px 0 6px"><div class="eyebrow" style="color:var(--flame)">你手上有火苗</div><div class="timer">剩餘時間 ${mmss(remain)}</div></div>
+    <div class="card center" style="background:#05060a;border-color:#3a2418">
+      <p style="color:var(--text)">把手機湊近下一位，喊出他的名字，再傳給他。</p>
+      <button class="btn big" data-act="passLight" ${relayJustSent?'disabled':''}>${relayJustSent?'火苗傳出去了':'傳出火苗'}</button>
+    </div>`;
+  }
+  const ahead = myPos - c.currentIndex;
+  return `
+  <div class="center" style="padding:40px 0">
+    <div class="eyebrow">在黑暗中等待</div><h1>你是第 ${myPos+1} 棒</h1>
+    <p class="pulse">前面還有 ${Math.max(ahead,0)} 人，注意火光靠近你。</p>
+    <div class="timer">剩餘時間 ${mmss(remain)}</div>
+  </div>`;
+}
+
+function viewHostChoir(){
+  const c = latestGame.choir;
+  const remain = c.endsAt - Date.now();
+  const success = c.status==='success';
+  const counts = {rhythm:0,melody:0,harmony:0};
+  Object.values(c.trackOf).forEach(t=>{ counts[t]=(counts[t]||0)+1; });
+  return `
+  <div class="center" style="padding:6px 0">
+    <div class="eyebrow">第三關 · 天國之城</div>
+    <h1>大家一起把樂曲拼起來</h1>
+    ${success? '<div class="timer" style="color:var(--ok)">全場大合唱！</div>' : `<div class="timer">剩餘時間 ${mmss(remain)}</div>`}
+    ${!success ? '<div class="beat-pulse"></div>' : ''}
+  </div>
+  <div class="card">
+    <div class="meter-track"><div class="meter-fill" style="width:${Math.min(c.resonance,100)}%"></div></div>
+    ${Object.keys(TRACK_INFO).map(k=>`
+      <div class="player-row"><span style="color:${TRACK_INFO[k].color}">${TRACK_INFO[k].name}</span><span class="tag">${counts[k]||0} 人</span></div>
+    `).join('')}
+  </div>
+  ${!success ? `<button class="btn secondary" data-act="hostForceComplete">直接過關（demo 用）</button>` : ''}
+  `;
+}
+function viewPlayerChoir(){
+  const c = latestGame.choir;
+  const track = c.trackOf[playerId] || 'rhythm';
+  const info = TRACK_INFO[track];
+  const success = c.status==='success';
+  if(success) return `<div class="center" style="padding:50px 0"><div class="eyebrow">大合唱</div><h1>你們把樂曲拼起來了</h1></div>`;
+  const remain = c.endsAt - Date.now();
+  return `
+  <div class="center" style="padding:10px 0">
+    <div class="eyebrow" style="color:${info.color}">你的音軌 · ${info.name}</div>
+    <div class="timer">剩餘時間 ${mmss(remain)}</div>
+  </div>
+  <div class="card center">
+    <p>跟著大螢幕的節奏，反覆點擊。</p>
+    <button class="btn big" style="background:${info.color}" data-act="tapMusic">打擊</button>
+  </div>
+  <p class="muted center">共鳴值 ${Math.round(Math.min(c.resonance,100))}%</p>
   `;
 }
 
 function viewResult(isHost){
   const players = latestPlayers;
-  const total = players.reduce((s,p)=>s+(p.faith||0),0);
   const rows = players.map(p=>{
     const r = ROLE_MAP[p.roleId];
-    return `<div class="blessing-row">
-      <div class="blessing-role">${escapeHtml(p.name)} · ${r?r.name:''}</div>
-      <div class="blessing-text">${r?r.blessing:''}</div>
-    </div>`;
+    return `<div class="blessing-row"><div class="blessing-role">${escapeHtml(p.name)} · ${r?r.name:''}</div><div class="blessing-text">${r?r.blessing:''}</div></div>`;
   }).join('');
   const me = players.find(p=>p.id===playerId);
   const myBlessing = me && ROLE_MAP[me.roleId] ? ROLE_MAP[me.roleId].blessing : '';
   return `
-  <div class="gate-wrap open" style="pointer-events:none">
-    <div class="gate-panel l"></div>
-    <div class="gate-panel r"></div>
-  </div>
+  <div class="gate-wrap open" style="pointer-events:none"><div class="gate-panel l"></div><div class="gate-panel r"></div></div>
   <div class="center">
-    <div class="eyebrow">天國之城</div>
-    <h1>全隊抵達</h1>
-    <div class="faith-total">${total}</div>
-    <p class="muted">團隊信心值</p>
+    <div class="eyebrow">天國之城</div><h1>全隊抵達</h1>
+    <p class="muted">窄門、死陰幽谷、天國之城——三關全數通過。</p>
   </div>
   <div class="card">
     ${isHost ? rows : `<div class="blessing-role" style="margin-bottom:4px">給你的祝福</div><div class="blessing-text">${myBlessing}</div>`}
@@ -615,6 +779,7 @@ function bindEvents(){
   app.querySelectorAll('[data-act]').forEach(el=>{
     const act = el.getAttribute('data-act');
     el.addEventListener('click', ()=>{
+      ensureAudio();
       if(act==='goHostSetup'){ hostSetupCode = randCode(); createRoom(); }
       else if(act==='goPlayerJoin'){ role='player'; playerId=null; render(); }
       else if(act==='pickRole'){ playerRoleId = el.getAttribute('data-role'); render(); }
@@ -624,11 +789,11 @@ function bindEvents(){
         joinRoom();
       }
       else if(act==='hostStart'){ hostStartGame(); }
-      else if(act==='hostForceAdvance'){ hostForceAdvance(); }
-      else if(act==='hostRetry'){ hostRetryConvergence(); }
+      else if(act==='hostForceComplete'){ hostForceComplete(); }
+      else if(act==='hostRetryRelay'){ hostRetryRelay(); }
       else if(act==='hostPlayAgain'){ hostPlayAgain(); }
-      else if(act==='tapExplore'){ playerTapExplore(); }
       else if(act==='passLight'){ playerPassLight(); }
+      else if(act==='tapMusic'){ playerTapMusic(); }
       else if(act==='retryConn'){ brokerAttempt=0; connectMqtt(); }
     });
   });

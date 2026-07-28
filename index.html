@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>天路 · Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12141d;
+    --panel:#1c2030;
+    --panel-2:#232841;
+    --line:#343a54;
+    --gold:#e8a33d;
+    --gold-deep:#b5741a;
+    --text:#f1ede0;
+    --text-dim:#9a9a8f;
+    --ok:#7fbe8c;
+    --bad:#d9695a;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(ellipse at top, #1a1e2c 0%, #101219 70%);
+    color:var(--text);
+    font-family:'Noto Sans TC', sans-serif;
+    min-height:100vh;
+    padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+    display:flex;
+    justify-content:center;
+  }
+  #app{
+    width:100%;
+    max-width:720px;
+  }
+  h1,h2,h3{
+    font-family:'Noto Serif TC', serif;
+    font-weight:700;
+    margin:0 0 6px;
+    letter-spacing:.02em;
+  }
+  h1{font-size:28px;}
+  h2{font-size:20px;color:var(--gold);}
+  h3{font-size:16px;color:var(--text);}
+  p{line-height:1.7;color:var(--text-dim);margin:0 0 16px;}
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:.15em;
+    color:var(--gold-deep);
+    text-transform:uppercase;
+    margin-bottom:8px;
+    font-weight:500;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:24px;
+    margin-bottom:16px;
+  }
+  .btn{
+    display:block;
+    width:100%;
+    padding:16px 20px;
+    font-size:16px;
+    font-weight:700;
+    font-family:'Noto Sans TC', sans-serif;
+    border:none;
+    border-radius:12px;
+    background:var(--gold);
+    color:#241a06;
+    cursor:pointer;
+    margin-top:12px;
+    transition:transform .12s ease, background .12s ease;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .btn.secondary{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--text);
+  }
+  .btn.big{
+    padding:28px 20px;
+    font-size:20px;
+    box-shadow:0 0 0 4px rgba(232,163,61,0.15);
+  }
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  input[type=text], select{
+    width:100%;
+    padding:14px 16px;
+    font-size:16px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--text);
+    margin-bottom:12px;
+    font-family:inherit;
+  }
+  input:focus-visible, select:focus-visible{outline:2px solid var(--gold);}
+  .role-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .role-card{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px;
+    cursor:pointer;
+    background:var(--panel-2);
+    text-align:left;
+  }
+  .role-card.sel{
+    border-color:var(--gold);
+    background:rgba(232,163,61,0.12);
+  }
+  .role-card .rn{font-weight:700;font-size:14px;display:block;}
+  .role-card .rg{font-size:12px;color:var(--text-dim);}
+  .code-display{
+    font-family:'Noto Serif TC', serif;
+    font-size:44px;
+    letter-spacing:.12em;
+    color:var(--gold);
+    text-align:center;
+    padding:12px 0;
+  }
+  .player-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .player-row:last-child{border-bottom:none;}
+  .tag{
+    font-size:11px;
+    padding:3px 8px;
+    border-radius:6px;
+    background:var(--panel-2);
+    color:var(--text-dim);
+  }
+  .tag.ready{background:rgba(127,190,140,0.18);color:var(--ok);}
+  .center{text-align:center;}
+  .muted{color:var(--text-dim);font-size:13px;}
+  .err{color:var(--bad);font-size:13px;margin:-6px 0 12px;}
+  .gate-wrap{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    margin:20px 0 8px;
+  }
+  .gate-panel{
+    width:70px;height:120px;
+    background:linear-gradient(180deg,#2a2f4a,#1c2030);
+    border:1px solid var(--line);
+    border-radius:6px;
+    transition:transform .6s ease, box-shadow .6s ease;
+  }
+  .gate-wrap.open .gate-panel.l{transform:translateX(-40px) rotateY(20deg);}
+  .gate-wrap.open .gate-panel.r{transform:translateX(40px) rotateY(-20deg);}
+  .gate-wrap.open .gate-panel{box-shadow:0 0 40px 10px rgba(232,163,61,0.5);border-color:var(--gold);}
+  .relay-track{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:8px 0 16px;
+  }
+  .relay-chip{
+    flex:0 0 auto;
+    padding:10px 14px;
+    border-radius:10px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    font-size:13px;
+    white-space:nowrap;
+    transition:all .3s ease;
+  }
+  .relay-chip.holder{
+    border-color:var(--gold);
+    background:rgba(232,163,61,0.15);
+    box-shadow:0 0 16px rgba(232,163,61,0.35);
+  }
+  .relay-chip.done{color:var(--ok);border-color:var(--ok);}
+  .timer{
+    font-family:'Noto Serif TC', serif;
+    font-size:15px;
+    color:var(--text-dim);
+    text-align:center;
+    margin-bottom:8px;
+  }
+  .pulse{animation:pulse 1.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important;}
+  }
+  .blessing-row{padding:12px 0;border-bottom:1px solid var(--line);}
+  .blessing-row:last-child{border-bottom:none;}
+  .blessing-role{font-weight:700;color:var(--gold);font-size:14px;}
+  .blessing-text{font-size:14px;color:var(--text-dim);margin-top:2px;}
+  .faith-total{
+    font-family:'Noto Serif TC', serif;
+    font-size:40px;
+    color:var(--gold);
+    text-align:center;
+    margin:8px 0 4px;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ---------- 資料模型 ----------
+room:{code}:players -> [{id,name,roleId,faith,ready,joinedAt}]
+room:{code}:game    -> {phase, exploreEndsAt, convergence:{order,currentIndex,holderSince,endsAt,status}, resultAt}
+room:{code}:action:{playerId} -> {ts}   (玩家「傳光」訊號，僅供 host 讀取消化)
+------------------------------------ */
+
+const ROLES = [
+  {id:'engineer',  name:'工程師 / 建築師', gift:'智慧與架構',   blessing:'感謝你為隊伍架起了穩固的窄門。'},
+  {id:'counselor', name:'心理師 / 社工師', gift:'勸慰與陪伴',   blessing:'感謝你在幽谷裡沒有讓任何人獨自前行。'},
+  {id:'pm',        name:'PM / 業務',      gift:'治理與連結',   blessing:'感謝你讓一盤散沙的隊伍同心合意。'},
+  {id:'designer',  name:'設計師 / 創作者', gift:'異象與美感',   blessing:'感謝你讓大家看見終點的光。'},
+  {id:'teacher',   name:'老師 / 講師',    gift:'教導與引導',   blessing:'感謝你在混亂中把真理說得清楚。'},
+  {id:'athlete',   name:'運動員 / 教練',  gift:'忍耐與剛強',   blessing:'感謝你撐過了最難走的那一段路。'}
+];
+const ROLE_MAP = Object.fromEntries(ROLES.map(r=>[r.id,r]));
+
+const EXPLORE_PROMPTS = {
+  engineer:  ['你注意到地圖上有一道被忽略的接縫。','你測量了岔路的坡度，選了比較穩的那條。','你在石堆裡找到一塊還撐得住的踏腳石。'],
+  counselor: ['你聽見遠處有人的腳步聲變慢了。','你留意到同伴的呼吸有點急。','你輕聲說了一句「還好嗎？我在。」'],
+  pm:        ['你確認了一下隊伍現在的位置跟狀態。','你喊了一聲，把大家重新集合起來。','你把接下來的順序在心裡排了一遍。'],
+  designer:  ['你注意到光落下來的角度特別美。','你在石壁上看見一個很舊的符號。','你想像了一下終點大概長什麼樣子。'],
+  teacher:   ['你想起一句很久以前聽過的話。','你把剛剛想通的道理默默記下來。','你決定等一下要說給大家聽。'],
+  athlete:   ['你深吸一口氣，把腳步站穩。','你先跨過一塊會晃的石頭，替大家探路。','你回頭伸手，扶了後面的人一把。']
+};
+const DEFAULT_PROMPTS = ['你在路上安靜地走了一段。','你想起了為什麼要走這趟路。','你抬頭，看見前方的光。'];
+
+// ---------- 全域狀態 ----------
+let role = null;          // 'host' | 'player'
+let roomCode = null;
+let playerId = null;
+let playerName = '';
+let playerRoleId = null;
+let joinError = '';
+let hostSetupCode = '';
+let exploreStep = 0;      // 本機玩家目前走到第幾個探索提示
+let exploreDone = false;
+let relayJustSent = false;
+
+let latestPlayers = [];
+let latestGame = {phase:'LOBBY'};
+let pollTimer = null;
+
+// ---------- storage 輔助 ----------
+async function storageGet(key){
+  try{
+    const res = await window.storage.get(key, true);
+    return res ? JSON.parse(res.value) : null;
+  }catch(e){ return null; }
+}
+async function storageSet(key, val){
+  try{
+    await window.storage.set(key, JSON.stringify(val), true);
+    return true;
+  }catch(e){ console.error('storage set failed', e); return false; }
+}
+
+function playersKey(code){ return 'tianlu:'+code+':players'; }
+function gameKey(code){ return 'tianlu:'+code+':game'; }
+function actionKey(code,id){ return 'tianlu:'+code+':action:'+id; }
+
+function randCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s='';
+  for(let i=0;i<4;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+function mmss(ms){
+  if(ms<0) ms=0;
+  const s=Math.floor(ms/1000);
+  return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+}
+
+// ---------- 主機端遊戲邏輯（只有 host 執行這段） ----------
+async function hostTick(){
+  const game = await storageGet(gameKey(roomCode));
+  const players = await storageGet(playersKey(roomCode)) || [];
+  if(!game) return;
+  latestGame = game; latestPlayers = players;
+
+  const now = Date.now();
+
+  if(game.phase === 'EXPLORE'){
+    const allReady = players.length>0 && players.every(p=>p.ready);
+    if(now >= game.exploreEndsAt || allReady){
+      const order = players.map(p=>p.id);
+      const newGame = {
+        phase:'CONVERGENCE',
+        convergence:{ order, currentIndex:0, holderSince:now, endsAt: now+90000, status:'active' }
+      };
+      await storageSet(gameKey(roomCode), newGame);
+      latestGame = newGame;
+    }
+  } else if(game.phase === 'CONVERGENCE'){
+    const c = game.convergence;
+    if(c.status === 'active'){
+      if(now >= c.endsAt){
+        const newGame = {...game, convergence:{...c, status:'fail'}};
+        await storageSet(gameKey(roomCode), newGame);
+        latestGame = newGame;
+      } else {
+        const holderId = c.order[c.currentIndex];
+        const act = await storageGet(actionKey(roomCode, holderId));
+        if(act && act.ts > c.holderSince){
+          const nextIndex = c.currentIndex+1;
+          if(nextIndex >= c.order.length){
+            const newGame = { phase:'RESULT', resultAt: now };
+            await storageSet(gameKey(roomCode), newGame);
+            latestGame = newGame;
+          } else {
+            const newGame = {...game, convergence:{...c, currentIndex:nextIndex, holderSince:now}};
+            await storageSet(gameKey(roomCode), newGame);
+            latestGame = newGame;
+          }
+        }
+      }
+    }
+  }
+  render();
+}
+
+async function playerTick(){
+  const game = await storageGet(gameKey(roomCode));
+  const players = await storageGet(playersKey(roomCode)) || [];
+  if(game) latestGame = game;
+  latestPlayers = players;
+  render();
+}
+
+function startPolling(fn){
+  if(pollTimer) clearInterval(pollTimer);
+  fn();
+  pollTimer = setInterval(fn, 900);
+}
+
+// ---------- 動作：建立房間 / 加入房間 ----------
+async function createRoom(){
+  role='host';
+  roomCode = hostSetupCode || randCode();
+  const freshGame = {phase:'LOBBY'};
+  await storageSet(playersKey(roomCode), []);
+  await storageSet(gameKey(roomCode), freshGame);
+  latestGame = freshGame; latestPlayers = [];
+  startPolling(hostTick);
+  render();
+}
+
+async function joinRoom(){
+  joinError='';
+  if(!playerName.trim()){ joinError='請輸入你的名字'; render(); return; }
+  if(!playerRoleId){ joinError='請選一個職業'; render(); return; }
+  if(!roomCode || roomCode.length<4){ joinError='請輸入房號'; render(); return; }
+  roomCode = roomCode.toUpperCase();
+
+  const game = await storageGet(gameKey(roomCode));
+  if(!game){ joinError='找不到這個房號，請跟主機再確認一次'; render(); return; }
+
+  playerId = uid();
+  let players = await storageGet(playersKey(roomCode)) || [];
+  players = players.concat([{id:playerId, name:playerName.trim(), roleId:playerRoleId, faith:0, ready:false, joinedAt:Date.now()}]);
+  await storageSet(playersKey(roomCode), players);
+
+  role='player';
+  latestGame = game; latestPlayers = players;
+  startPolling(playerTick);
+  render();
+}
+
+async function updateSelf(patch){
+  let players = await storageGet(playersKey(roomCode)) || [];
+  players = players.map(p=> p.id===playerId ? {...p, ...patch} : p);
+  await storageSet(playersKey(roomCode), players);
+  latestPlayers = players;
+}
+
+async function hostStartGame(){
+  const newGame = {phase:'EXPLORE', exploreEndsAt: Date.now()+180000};
+  await storageSet(gameKey(roomCode), newGame);
+  latestGame = newGame;
+  render();
+}
+async function hostForceAdvance(){
+  const players = latestPlayers;
+  const order = players.map(p=>p.id);
+  const newGame = { phase:'CONVERGENCE', convergence:{ order, currentIndex:0, holderSince:Date.now(), endsAt:Date.now()+90000, status:'active' } };
+  await storageSet(gameKey(roomCode), newGame);
+  latestGame = newGame;
+  render();
+}
+async function hostRetryConvergence(){
+  const c = latestGame.convergence;
+  const newGame = {...latestGame, convergence:{...c, currentIndex:0, holderSince:Date.now(), endsAt:Date.now()+90000, status:'active'}};
+  await storageSet(gameKey(roomCode), newGame);
+  latestGame = newGame;
+  render();
+}
+async function hostPlayAgain(){
+  let players = latestPlayers.map(p=>({...p, faith:0, ready:false}));
+  await storageSet(playersKey(roomCode), players);
+  const newGame = {phase:'LOBBY'};
+  await storageSet(gameKey(roomCode), newGame);
+  latestPlayers = players; latestGame = newGame;
+  render();
+}
+
+async function playerTapExplore(){
+  const prompts = EXPLORE_PROMPTS[playerRoleId] || DEFAULT_PROMPTS;
+  const me = latestPlayers.find(p=>p.id===playerId) || {faith:0};
+  const newFaith = (me.faith||0) + 10;
+  exploreStep++;
+  if(exploreStep >= prompts.length){
+    exploreDone = true;
+    await updateSelf({faith:newFaith, ready:true});
+  } else {
+    await updateSelf({faith:newFaith});
+  }
+  render();
+}
+
+async function playerPassLight(){
+  relayJustSent = true;
+  await storageSet(actionKey(roomCode, playerId), {ts:Date.now()});
+  render();
+  setTimeout(()=>{ relayJustSent=false; render(); }, 1200);
+}
+
+// ---------- 畫面渲染 ----------
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = view();
+  bindEvents();
+}
+
+function view(){
+  if(!role) return viewSelect();
+  if(role==='host'){
+    if(!latestGame || latestGame.phase==='LOBBY') return viewHostLobby();
+    if(latestGame.phase==='EXPLORE') return viewHostExplore();
+    if(latestGame.phase==='CONVERGENCE') return viewHostConvergence();
+    if(latestGame.phase==='RESULT') return viewResult(true);
+  }
+  if(role==='player'){
+    if(role==='player' && playerId===null) return viewPlayerJoinForm();
+    if(!latestGame || latestGame.phase==='LOBBY') return viewPlayerLobby();
+    if(latestGame.phase==='EXPLORE') return viewPlayerExplore();
+    if(latestGame.phase==='CONVERGENCE') return viewPlayerConvergence();
+    if(latestGame.phase==='RESULT') return viewResult(false);
+  }
+  return '';
+}
+
+function viewSelect(){
+  return `
+    <div class="center" style="padding:40px 0 20px">
+      <div class="eyebrow">天路 · demo 關卡</div>
+      <h1>選擇這台裝置的角色</h1>
+      <p>大螢幕請放在大家看得到的地方；每個人請各自用自己的手機打開同一個網址，選「我是玩家」。</p>
+    </div>
+    <div class="card">
+      <button class="btn" data-act="goHostSetup">這台是大螢幕（主機）</button>
+      <button class="btn secondary" data-act="goPlayerJoin">這台是玩家的手機</button>
+    </div>
+  `;
+}
+
+function viewHostSetupPending(){ return hostSetupCode !== null; }
+
+function viewHostLobby(){
+  const players = latestPlayers;
+  return `
+  <div class="center" style="padding:10px 0">
+    <div class="eyebrow">房號 · 請大家看這裡</div>
+    <div class="code-display">${roomCode}</div>
+    <p class="muted">其他人請打開同一個網址，選「我是玩家的手機」，輸入這組房號加入。</p>
+  </div>
+  <div class="card">
+    <h3>已加入（${players.length}）</h3>
+    ${players.length===0 ? '<p class="muted">還沒有人加入……</p>' :
+      players.map(p=>`<div class="player-row"><span>${escapeHtml(p.name)}</span><span class="tag">${ROLE_MAP[p.roleId]?ROLE_MAP[p.roleId].name:''}</span></div>`).join('')}
+  </div>
+  <button class="btn" data-act="hostStart" ${players.length<1?'disabled':''}>開始遊戲</button>
+  <p class="muted center" style="margin-top:8px">建議 2～4 人一起玩，體驗會比較完整。</p>
+  `;
+}
+
+function viewPlayerJoinForm(){
+  const roleGrid = ROLES.map(r=>`
+    <div class="role-card ${playerRoleId===r.id?'sel':''}" data-act="pickRole" data-role="${r.id}">
+      <span class="rn">${r.name}</span>
+      <span class="rg">${r.gift}</span>
+    </div>`).join('');
+  return `
+  <div style="padding:16px 0 4px">
+    <div class="eyebrow">加入天路</div>
+    <h1>選你的職業，走你的路</h1>
+  </div>
+  <div class="card">
+    <label class="muted">你的名字</label>
+    <input type="text" id="inpName" placeholder="怎麼稱呼你" value="${escapeHtml(playerName)}">
+    <label class="muted">選一個職業</label>
+    <div class="role-grid">${roleGrid}</div>
+    <label class="muted">房號（跟大螢幕上的一樣）</label>
+    <input type="text" id="inpCode" placeholder="例如 A1B2" value="${escapeHtml(roomCode||'')}" style="text-transform:uppercase">
+    ${joinError?`<div class="err">${escapeHtml(joinError)}</div>`:''}
+    <button class="btn" data-act="doJoin">加入房間</button>
+  </div>
+  `;
+}
+
+function viewPlayerLobby(){
+  const players = latestPlayers;
+  return `
+  <div class="center" style="padding:30px 0">
+    <div class="eyebrow">已加入</div>
+    <h1>等主持人開始……</h1>
+    <p>你是「${ROLE_MAP[playerRoleId]?ROLE_MAP[playerRoleId].name:''}」</p>
+  </div>
+  <div class="card">
+    <h3>目前隊伍（${players.length}）</h3>
+    ${players.map(p=>`<div class="player-row"><span>${escapeHtml(p.name)}</span><span class="tag">${ROLE_MAP[p.roleId]?ROLE_MAP[p.roleId].name:''}</span></div>`).join('')}
+  </div>
+  `;
+}
+
+function viewHostExplore(){
+  const players = latestPlayers;
+  const remain = latestGame.exploreEndsAt - Date.now();
+  const readyCount = players.filter(p=>p.ready).length;
+  return `
+  <div class="center" style="padding:10px 0">
+    <div class="eyebrow">第一階段 · 個人探索</div>
+    <h1>大家正走在各自的路上</h1>
+    <div class="timer">剩餘時間 ${mmss(remain)}</div>
+  </div>
+  <div class="card">
+    <h3>探索進度（${readyCount} / ${players.length} 完成）</h3>
+    ${players.map(p=>`
+      <div class="player-row">
+        <span>${escapeHtml(p.name)} · ${ROLE_MAP[p.roleId]?ROLE_MAP[p.roleId].name:''}</span>
+        <span class="tag ${p.ready?'ready':''}">${p.ready?'完成':'探索中'}</span>
+      </div>`).join('')}
+  </div>
+  <button class="btn secondary" data-act="hostForceAdvance">大家都好了，直接進下一關</button>
+  `;
+}
+
+function viewPlayerExplore(){
+  const prompts = EXPLORE_PROMPTS[playerRoleId] || DEFAULT_PROMPTS;
+  if(exploreDone){
+    return `
+    <div class="center" style="padding:40px 0">
+      <div class="eyebrow">探索完成</div>
+      <h1>你已經走過這一段</h1>
+      <p>等其他人走完，或等主持人開始下一關。</p>
+    </div>
+    `;
+  }
+  const text = prompts[Math.min(exploreStep, prompts.length-1)];
+  return `
+  <div style="padding:20px 0 8px">
+    <div class="eyebrow">你的路 · ${ROLE_MAP[playerRoleId]?ROLE_MAP[playerRoleId].name:''}</div>
+  </div>
+  <div class="card center">
+    <p style="font-size:16px;color:var(--text)">${text}</p>
+    <button class="btn big" data-act="tapExplore">繼續往前走</button>
+  </div>
+  <p class="muted center">${exploreStep+1} / ${prompts.length}</p>
+  `;
+}
+
+function viewHostConvergence(){
+  const c = latestGame.convergence;
+  const players = latestPlayers;
+  const nameOf = id => (players.find(p=>p.id===id)||{}).name || '?';
+  const remain = c.endsAt - Date.now();
+  const failed = c.status==='fail';
+  return `
+  <div class="center" style="padding:6px 0">
+    <div class="eyebrow">窄門與同心合意</div>
+    <h1>把光傳遍全隊，才能推開這道門</h1>
+    ${failed? `<div class="timer" style="color:var(--bad)">時間到，還沒傳完一圈</div>` : `<div class="timer">剩餘時間 ${mmss(remain)}</div>`}
+  </div>
+  <div class="gate-wrap ${failed?'':''}">
+    <div class="gate-panel l"></div>
+    <div class="gate-panel r"></div>
+  </div>
+  <div class="card">
+    <div class="relay-track">
+      ${c.order.map((id,i)=>`
+        <div class="relay-chip ${i===c.currentIndex && !failed?'holder pulse':''} ${i<c.currentIndex?'done':''}">
+          ${i+1}. ${escapeHtml(nameOf(id))}
+        </div>`).join('')}
+    </div>
+    <p class="muted center">現場大聲喊出下一棒是誰，逼大家真的開口溝通。</p>
+  </div>
+  ${failed ? `<button class="btn" data-act="hostRetry">重新挑戰這一關</button>` : ''}
+  `;
+}
+
+function viewPlayerConvergence(){
+  const c = latestGame.convergence;
+  const holderId = c.order[c.currentIndex];
+  const isHolder = holderId === playerId;
+  const myPos = c.order.indexOf(playerId);
+  const remain = c.endsAt - Date.now();
+  const failed = c.status==='fail';
+
+  if(failed){
+    return `
+    <div class="center" style="padding:40px 0">
+      <div class="eyebrow">挑戰失敗</div>
+      <h1>光沒有傳完一圈</h1>
+      <p>看大螢幕，主持人按下重新挑戰後再繼續。</p>
+    </div>`;
+  }
+
+  if(isHolder){
+    return `
+    <div style="padding:16px 0 6px">
+      <div class="eyebrow">你手上有光</div>
+      <div class="timer">剩餘時間 ${mmss(remain)}</div>
+    </div>
+    <div class="card center">
+      <p style="color:var(--text)">大聲喊出下一位的名字，再把光傳給他。</p>
+      <button class="btn big" data-act="passLight" ${relayJustSent?'disabled':''}>${relayJustSent?'已傳出！':'傳出真理之光'}</button>
+    </div>
+    `;
+  }
+  const ahead = myPos - c.currentIndex;
+  return `
+  <div class="center" style="padding:40px 0">
+    <div class="eyebrow">等待接光</div>
+    <h1>你是第 ${myPos+1} 棒</h1>
+    <p class="pulse">前面還有 ${Math.max(ahead,0)} 人，注意聽誰喊你的名字。</p>
+    <div class="timer">剩餘時間 ${mmss(remain)}</div>
+  </div>
+  `;
+}
+
+function viewResult(isHost){
+  const players = latestPlayers;
+  const total = players.reduce((s,p)=>s+(p.faith||0),0);
+  const rows = players.map(p=>{
+    const r = ROLE_MAP[p.roleId];
+    return `<div class="blessing-row">
+      <div class="blessing-role">${escapeHtml(p.name)} · ${r?r.name:''}</div>
+      <div class="blessing-text">${r?r.blessing:''}</div>
+    </div>`;
+  }).join('');
+
+  const me = players.find(p=>p.id===playerId);
+  const myBlessing = me && ROLE_MAP[me.roleId] ? ROLE_MAP[me.roleId].blessing : '';
+
+  return `
+  <div class="gate-wrap open" style="pointer-events:none">
+    <div class="gate-panel l"></div>
+    <div class="gate-panel r"></div>
+  </div>
+  <div class="center">
+    <div class="eyebrow">天國之城</div>
+    <h1>全隊抵達</h1>
+    <div class="faith-total">${total}</div>
+    <p class="muted">團隊信心值</p>
+  </div>
+  <div class="card">
+    ${isHost ? rows : `<div class="blessing-role" style="margin-bottom:4px">給你的祝福</div><div class="blessing-text">${myBlessing}</div>`}
+  </div>
+  ${isHost ? `<button class="btn" data-act="hostPlayAgain">再玩一次</button>` : `<p class="muted center">請看大螢幕，看看整支隊伍的天路回顧。</p>`}
+  `;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ---------- 事件綁定 ----------
+function bindEvents(){
+  const app = document.getElementById('app');
+
+  app.querySelectorAll('[data-act]').forEach(el=>{
+    const act = el.getAttribute('data-act');
+    el.addEventListener('click', ()=>{
+      if(act==='goHostSetup'){ hostSetupCode = randCode(); createRoom(); }
+      else if(act==='goPlayerJoin'){ role='player'; playerId=null; render(); }
+      else if(act==='pickRole'){ playerRoleId = el.getAttribute('data-role'); render(); }
+      else if(act==='doJoin'){
+        playerName = document.getElementById('inpName').value;
+        roomCode = document.getElementById('inpCode').value.trim().toUpperCase();
+        joinRoom();
+      }
+      else if(act==='hostStart'){ hostStartGame(); }
+      else if(act==='hostForceAdvance'){ hostForceAdvance(); }
+      else if(act==='hostRetry'){ hostRetryConvergence(); }
+      else if(act==='hostPlayAgain'){ hostPlayAgain(); }
+      else if(act==='tapExplore'){ playerTapExplore(); }
+      else if(act==='passLight'){ playerPassLight(); }
+    });
+  });
+
+  const nameInput = document.getElementById('inpName');
+  if(nameInput) nameInput.addEventListener('input', e=>{ playerName = e.target.value; });
+  const codeInput = document.getElementById('inpCode');
+  if(codeInput) codeInput.addEventListener('input', e=>{ roomCode = e.target.value.toUpperCase(); });
+}
+
+render();
+</script>
+</body>
+</html>
